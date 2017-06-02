@@ -2,6 +2,8 @@ const express            = require('express');
 const JSONError          = require('../lib/json_error');
 const { PATH_NOT_FOUND } = require('../lib/strings/strings');
 const logger             = require('winston');
+const bodyParser         = require('body-parser');
+const UserRouter         = require('./routes/user');
 
 const PATH_TO_STATIC_CONTENT = __dirname + '/../public';
 
@@ -14,6 +16,8 @@ class HttpServer {
   initializeExpress() {
     this.app.use(express.static(PATH_TO_STATIC_CONTENT));
     this.app.use(this._initRequestMiddleware.bind(this));
+    this.app.use(bodyParser.urlencoded({extended: true}));
+    this.app.use('/user', UserRouter);
     this.app.use(this._notFoundMiddleware.bind(this));
     this.app.use(this._errorHandlerMiddleware.bind(this));
   }
