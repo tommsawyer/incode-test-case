@@ -1,0 +1,24 @@
+{
+  "name": "incode-systems",
+  "version": "1.0.0",
+  "description": "test case for incode systems",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "./node_modules/mocha/bin/mocha \"./test/**/*.test.js\""
+  },
+  "author": "Denis Maximov",
+  "license": "WTFPL",
+  "dependencies": {
+    "express": "^4.15.3",
+    "pg": "^6.2.3",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^3.30.4",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "mocha": "^3.4.2",
+    "supertest": "^3.0.0"
+  }
+}
