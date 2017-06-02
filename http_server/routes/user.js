@@ -1,11 +1,24 @@
 const JSONError = require('../../lib/json_error');
-const { USER_NOT_FOUND } = require('../../lib/strings/strings');
+const {
+  USER_NOT_FOUND,
+  NAME_REQUIRED,
+  EMAIL_REQUIRED
+} = require('../../lib/strings/strings');
 const express = require('express');
 const router = express.Router();
 const models = require('../../models');
 const logger = require('winston');
+const emailRegExp = /.+@.+\..+/i;
 
 router.post('/', function(req, res, next) {
+  if (!req.body.name) {
+    return next(new JSONError(NAME_REQUIRED, 400));
+  }
+
+  if (!req.body.email || !emailRegExp.test(req.body.email)) {
+    return next(new JSONError(EMAIL_REQUIRED, 400));
+  }
+
   models.User.create({
     name: req.body.name,
     email: req.body.email
@@ -17,10 +30,12 @@ router.post('/', function(req, res, next) {
 });
 
 router.put('/:id', function(req, res, next) {
+  //TODO: update user
   res.json('Update user');
 });
 
 router.delete('/:id', function(req, res, next) {
+  //TODO: delete user
   res.json('Delete user');
 });
 

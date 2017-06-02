@@ -44,12 +44,13 @@ class HttpServer {
   }
 
   _errorHandlerMiddleware(err, req, res, next) {
+    logger.error(JSON.stringify(err));
+
     if (!(err instanceof JSONError)) {
       err = new JSONError();
     }
 
     const errorMessage = err.toClient();
-    logger.error(errorMessage);
     res.status(err.code).end(errorMessage);
   }
 
