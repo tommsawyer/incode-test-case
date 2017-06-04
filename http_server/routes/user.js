@@ -2,7 +2,8 @@ const JSONError = require('../../lib/json_error');
 const {
   USER_NOT_FOUND,
   NAME_REQUIRED,
-  EMAIL_REQUIRED
+  EMAIL_REQUIRED,
+  PASSWORD_REQUIRED
 } = require('../../lib/strings/strings');
 const express = require('express');
 const router = express.Router();
@@ -19,12 +20,17 @@ router.post('/', function(req, res, next) {
     return next(new JSONError(EMAIL_REQUIRED, 400));
   }
 
+  if (!req.body.password) {
+    return next(new JSONError(PASSWORD_REQUIRED, 400));
+  }
+
   models.User.create({
     name: req.body.name,
-    email: req.body.email
+    email: req.body.email,
+    password: req.body.password
   }).then(user => {
     logger.debug('Created user: ' + JSON.stringify(user.dataValues));
-    res.json(user.dataValues);
+    res.json(user.toJSON());
   })
   .catch(next);
 });
@@ -46,7 +52,7 @@ router.get('/:id', function(req, res, next) {
         throw new JSONError(USER_NOT_FOUND, 404);
       }
 
-      res.json(user.dataValues);
+      res.json(user.toJSON());
     })
     .catch(next);
 });
@@ -54,7 +60,7 @@ router.get('/:id', function(req, res, next) {
 router.get('/', function(req, res, next) {
   models.User.findAll()
     .then(users => {
-      res.json(users.map(user => user.dataValues));
+      res.json(users.map(user => user.toJSON()));
     })
     .catch(next);
 });
