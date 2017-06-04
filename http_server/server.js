@@ -4,6 +4,8 @@ const { PATH_NOT_FOUND } = require('../lib/strings/strings');
 const logger             = require('winston');
 const bodyParser         = require('body-parser');
 const UserRouter         = require('./routes/user');
+const AuthRouter         = require('./routes/auth');
+const { passport }       = require('../lib/passport');
 
 const PATH_TO_STATIC_CONTENT = __dirname + '/../public';
 
@@ -15,9 +17,11 @@ class HttpServer {
 
   initializeExpress() {
     this.app.use(express.static(PATH_TO_STATIC_CONTENT));
+    this.app.use(passport.initialize());
     this.app.use(this._initRequestMiddleware.bind(this));
     this.app.use(bodyParser.urlencoded({extended: true}));
     this.app.use('/user', UserRouter);
+    this.app.use('/auth', AuthRouter);
     this.app.use(this._notFoundMiddleware.bind(this));
     this.app.use(this._errorHandlerMiddleware.bind(this));
   }

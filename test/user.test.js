@@ -4,13 +4,14 @@ const models = require('../models');
 const assert = require('assert');
 const { EMAIL_REQUIRED, NAME_REQUIRED, PASSWORD_REQUIRED } = require('../lib/strings/strings');
 
-before(done => {
-  models.User.destroy({where: {}, truncate:true}).then(() => done());
-});
 
 let userId;
 
 describe('User', () => {
+  before(done => {
+    models.User.destroy({where: {}, truncate:true}).then(() => done());
+  });
+
   it('shouldnot create user without name field', () => {
     return request(app)
       .post('/user')
