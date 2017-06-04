@@ -15,6 +15,15 @@ module.exports = function(sequelize, DataTypes) {
         const hashedPassword = bcrypt.hashSync(user.password, salt);
         user.password = hashedPassword;
         next(null, user);
+      },
+
+      beforeUpdate(user, options, next) {
+        if (options.fields.indexOf('password') !== -1) {
+          const salt = bcrypt.genSaltSync(10);
+          const hashedPassword = bcrypt.hashSync(user.password, salt);
+          user.password = hashedPassword;
+        }
+        next(null, user);
       }
     },
 

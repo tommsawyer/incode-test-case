@@ -3,12 +3,14 @@ const {
   USER_NOT_FOUND,
   NAME_REQUIRED,
   EMAIL_REQUIRED,
-  PASSWORD_REQUIRED
+  PASSWORD_REQUIRED,
+  USER_HAS_BEEN_DELETED
 } = require('../../lib/strings/strings');
 const express = require('express');
 const router = express.Router();
 const models = require('../../models');
 const logger = require('winston');
+const { needAuth } = require('../../lib/passport');
 const emailRegExp = /.+@.+\..+/i;
 
 router.post('/', function(req, res, next) {
@@ -35,14 +37,27 @@ router.post('/', function(req, res, next) {
   .catch(next);
 });
 
-router.put('/:id', function(req, res, next) {
-  //TODO: update user
-  res.json('Update user');
+router.put('/', needAuth(), function(req, res, next) {
+  let userConfig = {
+    name: req.body.name,
+    email: req.body.email
+  };
+
+  if (req.body.password) {
+    userConfig.password = req.body.password;
+  }
+
+  req.user.update(userConfig).then(user => {
+    res.json(user);
+  }).catch(next);
 });
 
-router.delete('/:id', function(req, res, next) {
-  //TODO: delete user
-  res.json('Delete user');
+router.delete('/', needAuth(), function(req, res, next) {
+  req.user.destroy()
+    .then(() => {
+      res.json(USER_HAS_BEEN_DELETED);
+    })
+    .catch(next);
 });
 
 router.get('/:id', function(req, res, next) {

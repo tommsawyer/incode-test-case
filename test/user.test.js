@@ -94,4 +94,56 @@ describe('User', () => {
         assert.equal(res.body.length, 1);
       });
   });
+
+  describe('Update and delete', () => {
+    let token;
+    before(done => {
+      request(app)
+        .post('/auth')
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .send({email:'email@google.com', password:'somepassword'})
+        .then(res => {
+          token = res.body.token;
+          done();
+        });
+    });
+
+    it('require auth for update', () => {
+      return request(app)
+        .put('/user')
+        .expect(401);
+    });
+
+    it('require auth for delete', () => {
+      return request(app)
+        .delete('/user')
+        .expect(401);
+    });
+
+    it('update user correctly', () => {
+      return request(app)
+        .put('/user')
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .set('Authorization', `JWT ${token}`)
+        .send({email:'emal@google.com'})
+        .expect(200)
+        .then(res => {
+          assert.equal(res.body.email, 'emal@google.com');
+        });
+    });
+
+    it('delete user correctly', () => {
+      return request(app)
+        .delete('/user')
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .set('Authorization', `JWT ${token}`)
+        .expect(200)
+        .then(res => {
+          return models.User.findAll();
+        })
+        .then(userCount => {
+          assert.equal(userCount, 0);
+        });
+    });
+  });
 });

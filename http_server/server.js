@@ -1,6 +1,6 @@
 const express            = require('express');
 const JSONError          = require('../lib/json_error');
-const { PATH_NOT_FOUND } = require('../lib/strings/strings');
+const { PATH_NOT_FOUND, ACCESS_DENIEDED } = require('../lib/strings/strings');
 const logger             = require('winston');
 const bodyParser         = require('body-parser');
 const UserRouter         = require('./routes/user');
@@ -49,6 +49,10 @@ class HttpServer {
 
   _errorHandlerMiddleware(err, req, res, next) {
     logger.error(JSON.stringify(err));
+
+    if (err.name === 'AuthenticationError') {
+      err = new JSONError(ACCESS_DENIEDED, 401);
+    }
 
     if (!(err instanceof JSONError)) {
       err = new JSONError();
