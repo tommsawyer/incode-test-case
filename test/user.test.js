@@ -9,7 +9,10 @@ let userId;
 
 describe('User', () => {
   before(done => {
-    models.User.destroy({where: {}, truncate:true}).then(() => done());
+    models.UserTrack.destroy({where: {}})
+      .then(() => {
+        return models.User.destroy({where: {}});
+      }).then(() => {done();});
   });
 
   it('shouldnot create user without name field', () => {

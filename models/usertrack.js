@@ -7,6 +7,16 @@ module.exports = function(sequelize, DataTypes) {
       associate: function(models) {
         UserTrack.belongsTo(models.User, {foreignKey: 'user_id'});
       }
+    },
+
+    instanceMethods: {
+      toJSON() {
+        return {
+          id: this.id,
+          user_id: this.user_id,
+          track_url: this.track_url
+        };
+      }
     }
   });
   return UserTrack;

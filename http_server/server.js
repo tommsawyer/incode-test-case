@@ -5,6 +5,7 @@ const logger             = require('winston');
 const bodyParser         = require('body-parser');
 const UserRouter         = require('./routes/user');
 const AuthRouter         = require('./routes/auth');
+const TrackRouter        = require('./routes/usertrack');
 const { passport }       = require('../lib/passport');
 
 const PATH_TO_STATIC_CONTENT = __dirname + '/../public';
@@ -22,6 +23,7 @@ class HttpServer {
     this.app.use(bodyParser.urlencoded({extended: true}));
     this.app.use('/user', UserRouter);
     this.app.use('/auth', AuthRouter);
+    this.app.use('/track', TrackRouter);
     this.app.use(this._notFoundMiddleware.bind(this));
     this.app.use(this._errorHandlerMiddleware.bind(this));
   }

@@ -11,17 +11,20 @@ const {
 
 describe('Auth', () => {
   before(done => {
-    models.User.destroy({where: {}, truncate:true})
-    .then(() => {
-      return models.User.create({
-        name: 'testUser',
-        email: 'email@google.com',
-        password: 'testPassword'
+    models.UserTrack.destroy({where: {}})
+      .then(() => {
+        return models.User.destroy({where: {}});
+      })
+      .then(() => {
+        return models.User.create({
+          name: 'testUser',
+          email: 'email@google.com',
+          password: 'testPassword'
+        });
+      })
+      .then(() => {
+        done();
       });
-    })
-    .then(() => {
-      done();
-    });
   });
 
   it('requires email field', () => {
