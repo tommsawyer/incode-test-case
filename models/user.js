@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('fs');
 const bcrypt = require('bcrypt');
 
 module.exports = function(sequelize, DataTypes) {
@@ -24,6 +25,17 @@ module.exports = function(sequelize, DataTypes) {
           const hashedPassword = bcrypt.hashSync(user.password, salt);
           user.password = hashedPassword;
         }
+
+        if (options.fields.indexOf('profile_photo') !== -1) {
+          const previousProfilePhoto = user._previousDataValues.profile_photo;
+          user.deletePhotoSync(previousProfilePhoto);
+        }
+
+        next(null, user);
+      },
+
+      beforeDestroy(user, options, next) {
+        user.deletePhotoSync();
         next(null, user);
       }
     },
@@ -37,8 +49,14 @@ module.exports = function(sequelize, DataTypes) {
         return {
           id: this.id,
           name: this.name,
-          email: this.email
+          email: this.email,
+          profile_photo: this.profile_photo
         };
+      },
+
+      deletePhotoSync(filename) {
+        const photoPath = `${__dirname}/../public/${filename || this.profile_photo}`;
+        fs.unlinkSync(photoPath);
       }
     }
   });

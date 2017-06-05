@@ -19,7 +19,8 @@ describe('Auth', () => {
         return models.User.create({
           name: 'testUser',
           email: 'email@google.com',
-          password: 'testPassword'
+          password: 'testPassword',
+          profile_photo: 'path_to_foto.jpg'
         });
       })
       .then(() => {

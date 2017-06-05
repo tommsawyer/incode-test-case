@@ -1,11 +1,17 @@
 const app = require('./server');
 const request = require('supertest');
 const models = require('../models');
+const fs = require('fs');
 const assert = require('assert');
-const { EMAIL_REQUIRED, NAME_REQUIRED, PASSWORD_REQUIRED } = require('../lib/strings/strings');
+const {
+  EMAIL_REQUIRED,
+  NAME_REQUIRED,
+  PASSWORD_REQUIRED,
+  WRONG_MIME_TYPE
+} = require('../lib/strings/strings');
 
 
-let userId;
+let userId, imagePath;
 
 describe('User', () => {
   before(done => {
@@ -18,7 +24,6 @@ describe('User', () => {
   it('shouldnot create user without name field', () => {
     return request(app)
       .post('/user')
-      .set('Content-Type', 'application/x-www-form-urlencoded')
       .expect(400)
       .then(res => {
         assert.equal(res.body.message, NAME_REQUIRED);
@@ -28,8 +33,7 @@ describe('User', () => {
   it('shouldnot create user without email field', () => {
     return request(app)
       .post('/user')
-      .set('Content-Type', 'application/x-www-form-urlencoded')
-      .send({name: 'somename'})
+      .field('name', 'somename')
       .expect(400)
       .then(res => {
         assert.equal(res.body.message, EMAIL_REQUIRED);
@@ -39,8 +43,8 @@ describe('User', () => {
   it('shouldnot create user with bad format email', () => {
     return request(app)
       .post('/user')
-      .set('Content-Type', 'application/x-www-form-urlencoded')
-      .send({name: 'somename', email: 'as'})
+      .field('name', 'somename')
+      .field('email', 'as')
       .expect(400)
       .then(res => {
         assert.equal(res.body.message, EMAIL_REQUIRED);
@@ -50,22 +54,51 @@ describe('User', () => {
   it('shouldnot create user without password field', () => {
     return request(app)
       .post('/user')
-      .set('Content-Type', 'application/x-www-form-urlencoded')
-      .send({name: 'somename', email: 'email@google.com'})
+      .field('name', 'somename')
+      .field('email', 'email@google.com')
       .expect(400)
       .then(res => {
         assert.equal(res.body.message, PASSWORD_REQUIRED);
       });
   });
 
+  it('do not accept bad format file', () => {
+    return request(app)
+      .post('/user')
+      .field('name', 'somename')
+      .field('email', 'email@google.com')
+      .field('password', 'somepassword')
+      .attach('profile_photo', './test/fixtures/bad_format_file.txt')
+      .expect(400)
+      .then(res => {
+        assert.equal(res.body.message, WRONG_MIME_TYPE);
+      });
+  });
+
+  it('do not accept too large file', () => {
+    return request(app)
+      .post('/user')
+      .field('name', 'somename')
+      .field('email', 'email@google.com')
+      .field('password', 'somepassword')
+      .attach('profile_photo', './test/fixtures/large_file.jpg')
+      .expect(400)
+      .then(res => {
+        assert.equal(res.body.message, 'File too large');
+      });
+  });
+
   it('create user with both fields', () => {
     return request(app)
       .post('/user')
-      .set('Content-Type', 'application/x-www-form-urlencoded')
-      .send({name: 'somename', email: 'email@google.com', password: 'somepassword'})
+      .field('name', 'somename')
+      .field('email', 'email@google.com')
+      .field('password', 'somepassword')
+      .attach('profile_photo', './test/fixtures/good_file.jpg')
       .expect(200)
       .then(res => {
         userId = res.body.id;
+        imagePath = `${__dirname}/../public/${res.body.profile_photo}`;
       });
   });
 
@@ -126,12 +159,15 @@ describe('User', () => {
     it('update user correctly', () => {
       return request(app)
         .put('/user')
-        .set('Content-Type', 'application/x-www-form-urlencoded')
         .set('Authorization', `JWT ${token}`)
-        .send({email:'emal@google.com'})
+        .field('email', 'emal@google.com')
+        .attach('profile_photo', './test/fixtures/good_file.jpg')
         .expect(200)
         .then(res => {
           assert.equal(res.body.email, 'emal@google.com');
+          // deletes previous image
+          assert.equal(fs.existsSync(imagePath), false);
+          imagePath = `${__dirname}/../public/${res.body.profile_photo}`;
         });
     });
 
@@ -146,6 +182,7 @@ describe('User', () => {
         })
         .then(userCount => {
           assert.equal(userCount, 0);
+          assert.equal(fs.existsSync(imagePath), false);
         });
     });
   });

@@ -57,7 +57,7 @@ class HttpServer {
     }
 
     if (!(err instanceof JSONError)) {
-      err = new JSONError();
+      err = new JSONError(err.message);
     }
 
     const errorMessage = err.toClient();

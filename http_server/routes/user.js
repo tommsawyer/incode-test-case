@@ -4,16 +4,18 @@ const {
   NAME_REQUIRED,
   EMAIL_REQUIRED,
   PASSWORD_REQUIRED,
-  USER_HAS_BEEN_DELETED
+  USER_HAS_BEEN_DELETED,
+  PROFILE_PHOTO_REQUIRED
 } = require('../../lib/strings/strings');
 const express = require('express');
 const router = express.Router();
 const models = require('../../models');
 const logger = require('winston');
 const { needAuth } = require('../../lib/passport');
+const saveProfilePhoto = require('../../lib/file_storage');
 const emailRegExp = /.+@.+\..+/i;
 
-router.post('/', function(req, res, next) {
+router.post('/', saveProfilePhoto, function(req, res, next) {
   if (!req.body.name) {
     return next(new JSONError(NAME_REQUIRED, 400));
   }
@@ -26,10 +28,15 @@ router.post('/', function(req, res, next) {
     return next(new JSONError(PASSWORD_REQUIRED, 400));
   }
 
+  if (!req.file) {
+    return next(new JSONError(PROFILE_PHOTO_REQUIRED, 400));
+  }
+
   models.User.create({
     name: req.body.name,
     email: req.body.email,
-    password: req.body.password
+    password: req.body.password,
+    profile_photo: req.file.filename
   }).then(user => {
     logger.debug('Created user: ' + JSON.stringify(user.dataValues));
     res.json(user.toJSON());
@@ -37,7 +44,11 @@ router.post('/', function(req, res, next) {
   .catch(next);
 });
 
-router.put('/', needAuth(), function(req, res, next) {
+router.put('/',
+           needAuth(),
+           saveProfilePhoto,
+           function(req, res, next) {
+
   let userConfig = {
     name: req.body.name,
     email: req.body.email
@@ -45,6 +56,10 @@ router.put('/', needAuth(), function(req, res, next) {
 
   if (req.body.password) {
     userConfig.password = req.body.password;
+  }
+
+  if (req.file) {
+    userConfig.profile_photo = req.file.filename;
   }
 
   req.user.update(userConfig).then(user => {

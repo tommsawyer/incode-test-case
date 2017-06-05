@@ -17,7 +17,8 @@ describe('UserTrack', () => {
         return models.User.create({
           name: 'testUser',
           email: 'email@google.com',
-          password: 'testPassword'
+          password: 'testPassword',
+          profile_photo: 'path_to_profile_photo'
         });
       })
       .then(user => {
