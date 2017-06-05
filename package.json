@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "NODE_ENV=test ./node_modules/mocha/bin/mocha \"./test/**/*.test.js\""
+    "test": "npm run jshint && npm run mocha",
+    "jshint": "./node_modules/jshint/bin/jshint ./",
+    "mocha": "NODE_ENV=test ./node_modules/mocha/bin/mocha \"./test/**/*.test.js\""
   },
   "author": "Denis Maximov",
   "license": "WTFPL",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "assert": "^1.4.1",
+    "jshint": "^2.9.4",
     "mocha": "^3.4.2",
     "supertest": "^3.0.0"
   }
